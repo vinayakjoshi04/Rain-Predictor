@@ -40,7 +40,7 @@ Rainfall-Prediction/
 | Component | Details |
 |-----------|---------|
 | **Algorithm** | XGBoost Classifier |
-| **Accuracy** | 83.37% on test dataset |
+| **Accuracy** | 82.43% on test dataset |
 | **Training Data** | Historical weather patterns |
 | **Validation** | Cross-validation with time-series split |
 
