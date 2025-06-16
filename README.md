@@ -6,6 +6,9 @@
 
 > A sophisticated machine learning web application that predicts daily rainfall probability using advanced weather parameters and XGBoost algorithm.
 
+![Uploading image.png…]()
+
+
 ## 🎯 Overview
 
 This project implements a robust rainfall prediction system that combines meteorological data analysis with machine learning to forecast whether it will rain on a given day. The system achieves **82.43% accuracy** using XGBoost classification and provides predictions through an intuitive web interface.
