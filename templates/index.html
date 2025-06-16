@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Rainfall Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+            transition: background 2s ease;
+        }
+
+        /* Sunny day background */
+        body.sunny {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 50%, #fdcb6e 100%);
+        }
+
+        /* Rainy day background */
+        body.rainy {
+            background: linear-gradient(135deg, #636e72 0%, #2d3436 50%, #74b9ff 100%);
+        }
+
+        /* Sun animation */
+        .sun {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, #fdcb6e 0%, #e17055 100%);
+            border-radius: 50%;
+            top: 10%;
+            right: -120px;
+            opacity: 0;
+            transition: all 3s ease;
+            z-index: 1;
+        }
+
+        .sun::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 150px;
+            height: 150px;
+            background: 
+                linear-gradient(45deg, transparent 40%, #fdcb6e 41%, #fdcb6e 43%, transparent 44%),
+                linear-gradient(-45deg, transparent 40%, #fdcb6e 41%, #fdcb6e 43%, transparent 44%),
+                linear-gradient(135deg, transparent 40%, #fdcb6e 41%, #fdcb6e 43%, transparent 44%),
+                linear-gradient(-135deg, transparent 40%, #fdcb6e 41%, #fdcb6e 43%, transparent 44%);
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            animation: rotateSun 20s linear infinite;
+        }
+
+        .sun.show {
+            right: 15%;
+            opacity: 1;
+        }
+
+        @keyframes rotateSun {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Animated background clouds */
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            opacity: 0.8;
+            transition: all 1s ease;
+        }
+
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+        }
+
+        .cloud1 {
+            width: 120px;
+            height: 50px;
+            top: 15%;
+            left: -150px;
+            animation: gatherFromLeftSlow 15s ease-in-out infinite;
+        }
+
+        .cloud1::before {
+            width: 60px;
+            height: 60px;
+            top: -30px;
+            left: 15px;
+        }
+
+        .cloud1::after {
+            width: 70px;
+            height: 50px;
+            top: -20px;
+            right: 15px;
+        }
+
+        .cloud2 {
+            width: 100px;
+            height: 40px;
+            top: 25%;
+            right: -120px;
+            animation: gatherFromRightSlow 15s ease-in-out infinite;
+            animation-delay: -2s;
+        }
+
+        .cloud2::before {
+            width: 50px;
+            height: 50px;
+            top: -25px;
+            left: 10px;
+        }
+
+        .cloud2::after {
+            width: 60px;
+            height: 40px;
+            top: -15px;
+            right: 10px;
+        }
+
+        .cloud3 {
+            width: 90px;
+            height: 35px;
+            top: 10%;
+            left: -100px;
+            animation: gatherFromLeftSlow 15s ease-in-out infinite;
+            animation-delay: -4s;
+        }
+
+        .cloud3::before {
+            width: 45px;
+            height: 45px;
+            top: -20px;
+            left: 10px;
+        }
+
+        .cloud3::after {
+            width: 55px;
+            height: 35px;
+            top: -12px;
+            right: 10px;
+        }
+
+        .cloud4 {
+            width: 110px;
+            height: 45px;
+            top: 30%;
+            right: -130px;
+            animation: gatherFromRightSlow 15s ease-in-out infinite;
+            animation-delay: -6s;
+        }
+
+        .cloud4::before {
+            width: 55px;
+            height: 55px;
+            top: -27px;
+            left: 12px;
+        }
+
+        .cloud4::after {
+            width: 65px;
+            height: 45px;
+            top: -18px;
+            right: 12px;
+        }
+
+        /* Dark clouds for rainy weather */
+        .cloud.dark {
+            background: rgba(100, 100, 100, 0.4);
+        }
+
+        .cloud.dark::before,
+        .cloud.dark::after {
+            background: rgba(100, 100, 100, 0.4);
+        }
+
+        /* Light clouds for sunny weather */
+        .cloud.light {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .cloud.light::before,
+        .cloud.light::after {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        @keyframes gatherFromLeftSlow {
+            0% { 
+                transform: translateX(0) translateY(0); 
+                opacity: 0.8;
+            }
+            25% { 
+                transform: translateX(35vw) translateY(-5px); 
+                opacity: 0.9;
+            }
+            50% { 
+                transform: translateX(40vw) translateY(0); 
+                opacity: 1;
+            }
+            75% { 
+                transform: translateX(45vw) translateY(5px); 
+                opacity: 0.7;
+            }
+            100% { 
+                transform: translateX(0) translateY(0); 
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes gatherFromRightSlow {
+            0% { 
+                transform: translateX(0) translateY(0); 
+                opacity: 0.8;
+            }
+            25% { 
+                transform: translateX(-35vw) translateY(-5px); 
+                opacity: 0.9;
+            }
+            50% { 
+                transform: translateX(-40vw) translateY(0); 
+                opacity: 1;
+            }
+            75% { 
+                transform: translateX(-45vw) translateY(5px); 
+                opacity: 0.7;
+            }
+            100% { 
+                transform: translateX(0) translateY(0); 
+                opacity: 0.8;
+            }
+        }
+
+        /* Rain animation */
+        .rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+
+        .rain.show {
+            opacity: 1;
+        }
+
+        .raindrop {
+            position: absolute;
+            background: linear-gradient(to bottom, rgba(174, 194, 224, 0.8), rgba(174, 194, 224, 0.4));
+            width: 2px;
+            height: 20px;
+            border-radius: 0 0 2px 2px;
+            animation: rainfall 1.2s linear infinite;
+        }
+
+        .raindrop:nth-child(1) { left: 5%; animation-delay: 0s; }
+        .raindrop:nth-child(2) { left: 15%; animation-delay: 0.1s; }
+        .raindrop:nth-child(3) { left: 25%; animation-delay: 0.2s; }
+        .raindrop:nth-child(4) { left: 35%; animation-delay: 0.3s; }
+        .raindrop:nth-child(5) { left: 45%; animation-delay: 0.4s; }
+        .raindrop:nth-child(6) { left: 55%; animation-delay: 0.5s; }
+        .raindrop:nth-child(7) { left: 65%; animation-delay: 0.6s; }
+        .raindrop:nth-child(8) { left: 75%; animation-delay: 0.7s; }
+        .raindrop:nth-child(9) { left: 85%; animation-delay: 0.8s; }
+        .raindrop:nth-child(10) { left: 95%; animation-delay: 0.9s; }
+        .raindrop:nth-child(11) { left: 10%; animation-delay: 0.15s; }
+        .raindrop:nth-child(12) { left: 20%; animation-delay: 0.25s; }
+        .raindrop:nth-child(13) { left: 30%; animation-delay: 0.35s; }
+        .raindrop:nth-child(14) { left: 40%; animation-delay: 0.45s; }
+        .raindrop:nth-child(15) { left: 50%; animation-delay: 0.55s; }
+        .raindrop:nth-child(16) { left: 60%; animation-delay: 0.65s; }
+        .raindrop:nth-child(17) { left: 70%; animation-delay: 0.75s; }
+        .raindrop:nth-child(18) { left: 80%; animation-delay: 0.85s; }
+        .raindrop:nth-child(19) { left: 90%; animation-delay: 0.95s; }
+        .raindrop:nth-child(20) { left: 3%; animation-delay: 0.05s; }
+
+        @keyframes rainfall {
+            0% { 
+                top: -20px; 
+                opacity: 0;
+                transform: translateX(0);
+            }
+            10% { 
+                opacity: 1;
+            }
+            90% { 
+                opacity: 1;
+                transform: translateX(15px);
+            }
+            100% { 
+                top: 100vh; 
+                opacity: 0;
+                transform: translateX(25px);
+            }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            font-weight: 300;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: slideInUp 0.8s ease-out 0.5s both;
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .form-group input:hover {
+            border-color: #c1c9d2;
+        }
+
+        /* Weather icons for each input */
+        .form-group::before {
+            content: '';
+            position: absolute;
+            right: 15px;
+            top: 35px;
+            width: 20px;
+            height: 20px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.6;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pressure::before { content: '🌡️'; font-size: 16px; }
+        .maxtemp::before { content: '🔥'; font-size: 16px; }
+        .temperature::before { content: '🌡️'; font-size: 16px; }
+        .mintemp::before { content: '❄️'; font-size: 16px; }
+        .dewpoint::before { content: '💧'; font-size: 16px; }
+        .humidity::before { content: '💨'; font-size: 16px; }
+        .cloudcover::before { content: '☁️'; font-size: 16px; }
+        .sunshine::before { content: '☀️'; font-size: 16px; }
+        .winddirection::before { content: '🧭'; font-size: 16px; }
+        .windspeed::before { content: '💨'; font-size: 16px; }
+
+        .predict-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .predict-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .predict-btn:hover::before {
+            left: 100%;
+        }
+
+        .predict-btn:active {
+            transform: translateY(0);
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            font-size: 1.3em;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);
+            animation: slideInResult 1s ease-out;
+            display: none;
+        }
+
+        .result-container.rain {
+            background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+        }
+
+        .result-container.sun {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+        }
+
+        @keyframes slideInResult {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .weather-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .form-container {
+                padding: 25px;
+                margin: 0 10px;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sun element -->
+    <div class="sun" id="sun"></div>
+
+    <!-- Animated background clouds -->
+    <div class="cloud cloud1" id="cloud1"></div>
+    <div class="cloud cloud2" id="cloud2"></div>
+    <div class="cloud cloud3" id="cloud3"></div>
+    <div class="cloud cloud4" id="cloud4"></div>
+
+    <!-- Rain animation -->
+    <div class="rain" id="rain">
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🌧️ Rainfall Predictor</h1>
+            <p>Advanced Weather Prediction System</p>
+        </div>
+
+        <div class="form-container">
+            <form method="POST" action="/predict" id="predictionForm">
+                <div class="form-grid">
+                    <div class="form-group pressure">
+                        <label for="pressure">Atmospheric Pressure (hPa)</label>
+                        <input type="number" id="pressure" name="pressure" step="0.01" required>
+                    </div>
+
+                    <div class="form-group maxtemp">
+                        <label for="maxtemp">Maximum Temperature (°C)</label>
+                        <input type="number" id="maxtemp" name="maxtemp" step="0.1" required>
+                    </div>
+
+                    <div class="form-group temperature">
+                        <label for="temperature">Current Temperature (°C)</label>
+                        <input type="number" id="temperature" name="temparature" step="0.1" required>
+                    </div>
+
+                    <div class="form-group mintemp">
+                        <label for="mintemp">Minimum Temperature (°C)</label>
+                        <input type="number" id="mintemp" name="mintemp" step="0.1" required>
+                    </div>
+
+                    <div class="form-group dewpoint">
+                        <label for="dewpoint">Dew Point (°C)</label>
+                        <input type="number" id="dewpoint" name="dewpoint" step="0.1" required>
+                    </div>
+
+                    <div class="form-group humidity">
+                        <label for="humidity">Humidity (%)</label>
+                        <input type="number" id="humidity" name="humidity" min="0" max="100" required>
+                    </div>
+
+                    <div class="form-group cloudcover">
+                        <label for="cloud">Cloud Cover (%)</label>
+                        <input type="number" id="cloud" name="cloud" min="0" max="100" required>
+                    </div>
+
+                    <div class="form-group sunshine">
+                        <label for="sunshine">Sunshine Hours</label>
+                        <input type="number" id="sunshine" name="sunshine" step="0.1" min="0" max="24" required>
+                    </div>
+
+                    <div class="form-group winddirection">
+                        <label for="winddirection">Wind Direction (degrees)</label>
+                        <input type="number" id="winddirection" name="winddirection" min="0" max="360" required>
+                    </div>
+
+                    <div class="form-group windspeed">
+                        <label for="windspeed">Wind Speed (km/h)</label>
+                        <input type="number" id="windspeed" name="windspeed" step="0.1" min="0" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="predict-btn">
+                    🔮 Predict Rainfall
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing weather patterns...</p>
+            </div>
+
+            <!-- Demo result containers (replace with Flask template logic) -->
+            <div class="result-container rain" id="rainResult">
+                <span class="weather-icon">🌧️</span>
+                Rainfall Prediction: Yes - It will rain today!
+            </div>
+
+            <div class="result-container sun" id="sunResult">
+                <span class="weather-icon">☀️</span>
+                Rainfall Prediction: No - Clear skies ahead!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Weather animation control functions
+        function triggerRainAnimation() {
+            const body = document.body;
+            const rain = document.getElementById('rain');
+            const sun = document.getElementById('sun');
+            const clouds = document.querySelectorAll('.cloud');
+            
+            // Change to rainy background
+            body.className = 'rainy';
+            
+            // Show rain
+            rain.classList.add('show');
+            
+            // Hide sun
+            sun.classList.remove('show');
+            
+            // Make clouds darker
+            clouds.forEach(cloud => {
+                cloud.classList.remove('light');
+                cloud.classList.add('dark');
+            });
+        }
+
+        function triggerSunAnimation() {
+            const body = document.body;
+            const rain = document.getElementById('rain');
+            const sun = document.getElementById('sun');
+            const clouds = document.querySelectorAll('.cloud');
+            
+            // Change to sunny background
+            body.className = 'sunny';
+            
+            // Hide rain
+            rain.classList.remove('show');
+            
+            // Show sun
+            sun.classList.add('show');
+            
+            // Make clouds lighter
+            clouds.forEach(cloud => {
+                cloud.classList.remove('dark');
+                cloud.classList.add('light');
+            });
+        }
+
+        // Demo function to simulate prediction results
+        function simulatePrediction(isRain) {
+            const loadingDiv = document.getElementById('loading');
+            const rainResult = document.getElementById('rainResult');
+            const sunResult = document.getElementById('sunResult');
+            
+            loadingDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                loadingDiv.style.display = 'none';
+                
+                if (isRain) {
+                    rainResult.style.display = 'block';
+                    sunResult.style.display = 'none';
+                    triggerRainAnimation();
+                } else {
+                    sunResult.style.display = 'block';
+                    rainResult.style.display = 'none';
+                    triggerSunAnimation();
+                }
+            }, 2000);
+        }
+
+        // Add form validation and prediction simulation
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent actual form submission for demo
+            
+            // Add client-side validation
+            const inputs = this.querySelectorAll('input[required]');
+            let valid = true;
+            
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    valid = false;
+                    input.style.borderColor = '#ff4757';
+                    input.style.backgroundColor = '#ffe6e6';
+                } else {
+                    input.style.borderColor = '#2ed573';
+                    input.style.backgroundColor = '#e6ffe6';
+                }
+            });
+
+            if (!valid) {
+                alert('Please fill in all required fields correctly.');
+                return false;
+            }
+
+            // Demo: Randomly predict rain or sun based on humidity and cloud cover
+            const humidity = parseFloat(document.getElementById('humidity').value) || 0;
+            const cloudCover = parseFloat(document.getElementById('cloud').value) || 0;
+            const isRain = (humidity > 70 || cloudCover > 60);
+            
+            simulatePrediction(isRain);
+        });
+
+        // Add interactive hover effects
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+
+        // Demo buttons for testing animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add demo buttons (remove these in production)
+            const demoControls = document.createElement('div');
+            demoControls.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 1000; display: flex; gap: 10px;';
+            demoControls.innerHTML = `
+                <button onclick="simulatePrediction(true)" style="padding: 10px; background: #636e72; color: white; border: none; border-radius: 5px; cursor: pointer;">Test Rain</button>
+                <button onclick="simulatePrediction(false)" style="padding: 10px; background: #fdcb6e; color: white; border: none; border-radius: 5px; cursor: pointer;">Test Sun</button>
+            `;
+            document.body.appendChild(demoControls);
+        });
+    </script>
+</body>
+</html>
