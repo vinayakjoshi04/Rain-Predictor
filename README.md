@@ -6,7 +6,7 @@
 
 > A sophisticated machine learning web application that predicts daily rainfall probability using advanced weather parameters and XGBoost algorithm.
 
-![Uploading image.png…]()
+![image](https://github.com/user-attachments/assets/f364c5bf-698f-49fb-b892-1d6358870bce)
 
 
 ## 🎯 Overview
