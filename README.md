@@ -18,7 +18,7 @@ This project implements a robust rainfall prediction system that combines meteor
 - 🤖 **Machine Learning Powered** - Utilizes XGBoost algorithm for high-accuracy predictions
 - 🌐 **Web Interface** - Clean, responsive HTML form for easy interaction
 - 📊 **Real-time Predictions** - Instant rainfall probability based on weather inputs
-- 🎯 **High Accuracy** - Achieves 83.37% testing accuracy
+- 🎯 **High Accuracy** - Achieves 82.43% testing accuracy
 - 🔧 **Easy Deployment** - Ready for cloud deployment with minimal configuration
 - 📱 **Responsive Design** - Works seamlessly across desktop and mobile devices
 
